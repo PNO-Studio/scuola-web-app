@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catalogo corsi – Iscrizioni</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif;margin:0;padding:16px;line-height:1.4}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between}
+.card{border:1px solid #ddd;border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 2px 4px rgba(0,0,0,.04)}
+input,select,button,textarea{padding:10px;border:1px solid #ccc;border-radius:8px;font-size:16px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+th{position:sticky;top:0;background:#fafafa}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #ddd;font-size:12px}
+.ok{color:green;border-color:green}
+.warn{color:#b00020;border-color:#b00020}
+.muted{color:#666}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.actions{display:flex;gap:8px;align-items:center}
+</style>
+</head>
+<body>
+<header>
+<h1>Catalogo corsi – Iscrizioni</h1>
+<input id="q" placeholder="Cerca titolo, docente, disciplina…" oninput="renderTable()">
+</header>
+
+<div class="card">
+<div class="row">
+<input id="nome" placeholder="Nome">
+<input id="cognome" placeholder="Cognome">
+<input id="classe" placeholder="Classe (es. 2DLS)">
+<input id="email" placeholder="Email">
+<select id="corso"></select>
+</div>
+<div class="actions" style="margin-top:12px">
+<button id="btn" onclick="submitForm()">Iscriviti</button>
+<span id="msg" class="muted"></span>
+</div>
+</div>
+
+<div class="card">
+<strong>Catalogo</strong>
+<div class="muted" style="margin:6px 0">Clicca su un corso per pre‑selezionarlo nel form.</div>
+<div style="overflow:auto;max-height:60vh">
+<table id="tbl">
+<thead>
+<tr>
+<th>ID</th><th>Titolo</th><th>Docente</th><th>Disciplina</th><th>Giorno</th><th>Ora</th><th>Posti liberi</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+
+<script>
+let catalog = [];
+
+function load() {
+setMsg('Carico catalogo…');
+google.script.run.withSuccessHandler(data=>{
+catalog = data;
+populateSelect();
+renderTable();
+setMsg('');
+}).withFailureHandler(err=>{
+setMsg('Errore nel caricamento: '+err.message);
+}).getCatalog();
+}
+
+function setMsg(t) { document.getElementById('msg').textContent = t || ''; }
+
+function populateSelect() {
+const sel = document.getElementById('corso');
+sel.innerHTML = '';
+const opt0 = document.createElement('option');
+opt0.value=''; opt0.text='Scegli un corso…';
+sel.appendChild(opt0);
+catalog.forEach(c=>{
+const o = document.createElement('option');
+o.value = c.id;
+o.text = `${c.id} — ${c.title} (${c.teacher||'—'})`;
+if (c.free !== null && c.free <= 0) {
+o.disabled = true;
+o.text += ' — [Completo]';
+} else if (typeof c.free === 'number') {
+o.text += ` — [${c.free} posti liberi]`;
+}
+sel.appendChild(o);
+});
+}
+
+function renderTable() {
+const q = (document.getElementById('q').value || '').toLowerCase();
+const tbody = document.querySelector('#tbl tbody');
+tbody.innerHTML = '';
+catalog.filter(c=>{
+const hay = [c.id,c.title,c.teacher,c.subject,c.weekday,c.time].join(' ').toLowerCase();
+return !q || hay.includes(q);
+}).forEach(c=>{
+const tr = document.createElement('tr');
+tr.style.cursor = 'pointer';
+tr.onclick = ()=>{ preselect(c.id); };
+tr.innerHTML = `
+<td>${escapeHtml(c.id)}</td>
+<td>${escapeHtml(c.title)}</td>
+<td>${escapeHtml(c.teacher||'')}</td>
+<td>${escapeHtml(c.subject||'')}</td>
+<td>${escapeHtml(c.weekday||'')}</td>
+<td>${escapeHtml(c.time||'')}</td>
+<td>${c.free===null?'<span class="pill">∞</span>': (c.free>0?'<span class="pill ok">'+c.free+'</span>':'<span class="pill warn">0</span>')}</td>
+`;
+tbody.appendChild(tr);
+});
+}
+
+function preselect(id) {
+const sel = document.getElementById('corso');
+sel.value = id;
+sel.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function submitForm() {
+const btn = document.getElementById('btn');
+const payload = {
+  nome: document.getElementById('nome').value,
+  cognome: document.getElementById('cognome').value,
+  classe: document.getElementById('classe').value,
+  email: document.getElementById('email').value,
+  corsoId: document.getElementById('corso').value,
+};
+if (!payload.nome || !payload.cognome || !payload.classe || !payload.email || !payload.corsoId) {
+  setMsg('Compila tutti i campi prima di inviare.');
+  return;
+}
+btn.disabled = true; setMsg('Invio in corso…');
+google.script.run.withSuccessHandler(res=>{
+setMsg('✅ '+res.message + (typeof res.posti_liberi==='number' ? ` — posti residui: ${res.posti_liberi}` : ''));
+// ricarica catalogo per aggiornare i posti liberi
+google.script.run.withSuccessHandler(data=>{
+catalog = data; populateSelect(); renderTable();
+}).getCatalog();
+btn.disabled = false;
+}).withFailureHandler(err=>{
+setMsg('❌ '+(err && err.message ? err.message : 'Errore'));
+btn.disabled = false;
+}).submitRegistration(payload);
+}
+
+// Helpers
+function escapeHtml(s) {
+return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+}
+
+
+document.addEventListener('DOMContentLoaded', load);
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
