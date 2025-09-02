@@ -13,7 +13,7 @@ define('DB_PASS', 'YOUR_DB_PASS');   // <-- metti il tuo
 define('BASE_URL', 'https://pno.altervista.org'); // <-- aggiorna
 
 // Sicurezza password
-define('PEPPER', 'ryjYT*Cg-Qgt3FkRUjeNfk3ozxhXmE'); // conserva fuori dal repo, se puoi
+define('PEPPER', '***'); // conservata fuori dal repo, cifrata al solito...
 define('HASH_ITERATIONS', 120000); // iterazioni SHA-256 (tradeoff sicurezza/performance)
 
 function pdo(): PDO {
@@ -43,3 +43,4 @@ function start_secure_session(): void {
         session_start();
     }
 }
+
