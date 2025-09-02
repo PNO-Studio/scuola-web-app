@@ -19,6 +19,67 @@ th{position:sticky;top:0;background:#fafafa}
 .muted{color:#666}
 .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
 .actions{display:flex;gap:8px;align-items:center}
+  /* UI enhancements */
+body {
+  background: #f5f7fb;
+  color: #333;
+  line-height: 1.6;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 16px 0;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+input, select, button, textarea {
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  font-size: 16px;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #4d90fe;
+  box-shadow: 0 0 0 3px rgba(77,144,254,0.2);
+  outline: none;
+}
+
+button {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background .3s;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+table {
+  background: #fff;
+}
+
+tbody tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
 </style>
 </head>
 <body>
@@ -56,7 +117,9 @@ th{position:sticky;top:0;background:#fafafa}
 </div>
 </div>
 
-<script>
+
+
+  <script>
 let catalog = [];
 
 function load() {
