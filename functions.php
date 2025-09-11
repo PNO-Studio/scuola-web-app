@@ -241,14 +241,6 @@ function count_iscrizioni_by_email(string $email): int {
     return (int)$st->fetchColumn();
 }
 
-function is_school_email(string $email): bool {
-    $email = mb_strtolower(trim($email));
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
-    // cognome.nome@stu.lasboccioni.it (solo lettere ASCII e un punto fra cognome/nome)
-    return (bool)preg_match('/^[a-z]+(?:\.[a-z]+)@stu\.lasboccioni\.it$/', $email);
-}
-
-
 /**
  * Iscrive a più corsi in un colpo solo (max totale 4 per studente).
  * Ritorna un array con: ok (n° inserite), fail (n° errori), inserted_ids, errors (per ID corso).
@@ -259,13 +251,9 @@ function registra_iscrizioni_multiple(string $nome, string $cognome, string $cla
     $cognome= trim($cognome);
     $classe = trim($classe);
 
-   if ($nome==='' || $cognome==='' || $classe==='') {
-    throw new RuntimeException('Compila correttamente Nome, Cognome e Classe.');
-}
-if (!is_school_email($email)) {
-    throw new RuntimeException('Email non valida. Usa il formato cognome.nome@stu.lasboccioni.it');
-}
-
+    if ($nome==='' || $cognome==='' || $classe==='' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        throw new RuntimeException('Dati studente non validi.');
+    }
 
     // pulizia e dedup
     $ids = [];
@@ -275,90 +263,34 @@ if (!is_school_email($email)) {
     }
     if (empty($ids)) throw new RuntimeException('Seleziona almeno un corso.');
 
-    // Limiti
-    $MAX_TOTAL = 4;
-    $MAX_TRI   = 2;
-    $MAX_PENTA = 2;
-
-    // Esistenti per questo studente
-    $existing = get_counts_by_period_for_email($email);
-    $remTotal = max(0, $MAX_TOTAL - $existing['total']);
-    $remTri   = max(0, $MAX_TRI   - $existing['trimestre']);
-    $remPenta = max(0, $MAX_PENTA - $existing['pentamestre']);
-
-    // Periodi nella selezione corrente
-    $selTri = 0; $selPenta = 0; $selOther = 0;
-    foreach ($ids as $cid) {
-        $p = get_periodo_for_corso($cid);
-        if ($p === 'trimestre') $selTri++;
-        elseif ($p === 'pentamestre') $selPenta++;
-        else $selOther++;
+    // limite totale per studente
+    $MAX = 4;
+    $già = count_iscrizioni_by_email($email);
+    $restano = max(0, $MAX - $già);
+    if ($restano <= 0) {
+        throw new RuntimeException("Limite raggiunto: hai già $già iscrizioni (massimo $MAX).");
+    }
+    if (count($ids) > $restano) {
+        throw new RuntimeException("Puoi selezionare al massimo $restano corsi (hai già $già su $MAX).");
     }
 
-    // Verifiche aggregate prima di inserire
-    $errs = [];
-    if (count($ids) > $remTotal) {
-        $errs[] = "Puoi selezionare al massimo {$remTotal} corsi (hai già {$existing['total']} su {$MAX_TOTAL}).";
-    }
-    if ($selTri > $remTri) {
-        $errs[] = "Trimestre: puoi aggiungere al massimo {$remTri} corso/i (hai già {$existing['trimestre']} su {$MAX_TRI}).";
-    }
-    if ($selPenta > $remPenta) {
-        $errs[] = "Pentamestre: puoi aggiungere al massimo {$remPenta} corso/i (hai già {$existing['pentamestre']} su {$MAX_PENTA}).";
-    }
-    if ($errs) throw new RuntimeException(implode(' ', $errs));
-
-    // Inserimenti (capienza/duplicati già gestiti da registra_iscrizione)
     $ok = 0; $fail = 0; $inserted = []; $errors = [];
+
+    // Inseriamo uno per volta, rispettando capienza e doppioni
     foreach ($ids as $cid) {
         try {
             registra_iscrizione($nome, $cognome, $classe, $email, $cid);
-            $ok++; $inserted[] = $cid;
+            $ok++;
+            $inserted[] = $cid;
         } catch (Throwable $e) {
-            $fail++; $errors[$cid] = $e->getMessage();
+            $fail++;
+            $errors[$cid] = $e->getMessage();
         }
     }
+
     return ['ok'=>$ok, 'fail'=>$fail, 'inserted_ids'=>$inserted, 'errors'=>$errors];
 }
 
-
-// Normalizza il valore "Periodo" in uno dei bucket: 'trimestre', 'pentamestre' o null
-function normalize_periodo(?string $s): ?string {
-    if (!$s) return null;
-    $t = mb_strtolower(trim($s));
-    $t = str_replace(['–','—'], '-', $t); // trattini tipografici
-    if (strpos($t, 'trim') !== false)  return 'trimestre';
-    if (strpos($t, 'penta') !== false) return 'pentamestre';
-    return null; // altri testi/ignoti
-}
-
-// Conta quante iscrizioni ha già uno studente per periodo
-function get_counts_by_period_for_email(string $email): array {
-    $pdo = pdo();
-    $st = $pdo->prepare(
-        "SELECT c.`Periodo`
-         FROM `iscrizioni` i
-         JOIN `corsi` c ON c.`ID Corso` = i.`Corsi selezionati (ID)`
-         WHERE i.`Email` = ?"
-    );
-    $st->execute([mb_strtolower(trim($email))]);
-    $total = 0; $tri = 0; $penta = 0;
-    while ($row = $st->fetch()) {
-        $total++;
-        $p = normalize_periodo($row['Periodo'] ?? null);
-        if ($p === 'trimestre') $tri++;
-        elseif ($p === 'pentamestre') $penta++;
-    }
-    return ['total'=>$total, 'trimestre'=>$tri, 'pentamestre'=>$penta];
-}
-
-// Ritorna il periodo normalizzato per un corso
-function get_periodo_for_corso(int $id): ?string {
-    $st = pdo()->prepare("SELECT `Periodo` FROM `corsi` WHERE `ID Corso`=?");
-    $st->execute([$id]);
-    $per = $st->fetchColumn();
-    return normalize_periodo($per !== false ? (string)$per : null);
-}
 
 
 
