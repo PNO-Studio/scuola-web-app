@@ -45,18 +45,6 @@ function esc($v){ return htmlspecialchars((string)$v, ENT_QUOTES|ENT_SUBSTITUTE,
 <style>
 body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;margin:0;background:#fafafa;color:#111}
 header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;padding:16px}
-
-.two-col{
-  display:grid;
-  grid-template-columns: 1fr;   /* mobile: 1 colonna */
-  gap:16px;
-  align-items:start;
-}
-@media (min-width: 900px){
-  .two-col{ grid-template-columns: 1fr 1fr; } /* desktop: 2 colonne */
-}
-
-
 .card{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:12px;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.04)}
 
 /* .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px} */
@@ -115,7 +103,6 @@ label.small{font-size:.9rem;color:#374151}
 .muted{color:#6b7280}
 .card.disabled{opacity:.55}
 .card .row{display:flex;align-items:center;gap:10px;justify-content:space-between}
-
 .top-actions{
   display:flex;
   align-items:center;
@@ -145,27 +132,12 @@ label.small{font-size:.9rem;color:#374151}
   <form method="post" id="formIscrizione">
     <input type="hidden" name="csrf" value="<?=esc($csrf)?>">
 
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
     <h2>Dati studente</h2>
     <div class="form-col">
   <div><label class="small">Nome<br><input name="nome" required></label></div>
   <div><label class="small">Cognome<br><input name="cognome" required></label></div>
-  <div><label class="small">Classe<br><input name="classe" required placeholder="es. 2L"></label></div>
-  
-  <div><label class="small">Email scolastica<br>
-  <input
-    type="email"
-    name="email"
-    required
-    placeholder="cognome.nome@stu.lasboccioni.it"
-    autocomplete="email"
-    inputmode="email"
-    pattern="^[a-z]+(?:\.[a-z]+)@stu\.lasboccioni\.it$"
-    title="Usa la mail istituzionale nel formato cognome.nome@stu.lasboccioni.it">
-</label></div>
-
-  
+  <div><label class="small">Classe<br><input name="classe" required placeholder="es. 2DLS"></label></div>
+  <div><label class="small">Email scolastica<br><input type="email" name="email" required></label></div>
 </div>
 
 
@@ -210,90 +182,11 @@ label.small{font-size:.9rem;color:#374151}
       <div><button type="button" class="btn" id="btnReset">Reset filtri</button></div>
     </div>
 
-<!-- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  -->
-
-<div class="two-col">
-  <!-- SINISTRA: DATI STUDENTE -->
-  <section>
-    <h2>Dati studente</h2>
-    <div class="form-col">
-      <div><label class="small">Nome<br><input name="nome" required></label></div>
-      <div><label class="small">Cognome<br><input name="cognome" required></label></div>
-      <div><label class="small">Classe<br><input name="classe" required placeholder="es. 2B"></label></div>
-      <div><label class="small">Email scolastica<br>
-        <input
-          type="email"
-          name="email"
-          required
-          placeholder="cognome.nome@stu.lasboccioni.it"
-          autocomplete="email"
-          inputmode="email"
-          pattern="^[a-z]+(?:\.[a-z]+)@stu\.lasboccioni\.it$"
-          title="Usa la mail istituzionale nel formato cognome.nome@stu.lasboccioni.it">
-      </label></div>
-    </div>
-  </section>
-
-  <!-- DESTRA: FILTRI -->
-  <section>
-    <h2>Filtra i corsi</h2>
-    <div class="toolbar">
-      <div>
-        <label class="small">Docente
-          <select id="fDocente"><option value="">Tutti</option>
-            <?php foreach($opt_docenti as $v): ?><option value="<?=esc($v)?>"><?=esc($v)?></option><?php endforeach; ?>
-          </select>
-        </label>
-      </div>
-      <div>
-        <label class="small">Disciplina
-          <select id="fDisc"><option value="">Tutte</option>
-            <?php foreach($opt_disc as $v): ?><option value="<?=esc($v)?>"><?=esc($v)?></option><?php endforeach; ?>
-          </select>
-        </label>
-      </div>
-      <div>
-        <label class="small">Periodo
-          <select id="fPeriodo"><option value="">Tutti</option>
-            <?php foreach($opt_periodo as $v): ?><option value="<?=esc($v)?>"><?=esc($v)?></option><?php endforeach; ?>
-          </select>
-        </label>
-      </div>
-      <div>
-        <label class="small">Giorno
-          <select id="fGiorno"><option value="">Tutti</option>
-            <?php foreach($opt_giorno as $v): ?><option value="<?=esc($v)?>"><?=esc($v)?></option><?php endforeach; ?>
-          </select>
-        </label>
-      </div>
-      <div>
-        <label class="small">Destinatari
-          <select id="fDest"><option value="">Tutti</option>
-            <?php foreach($opt_dest as $v): ?><option value="<?=esc($v)?>"><?=esc($v)?></option><?php endforeach; ?>
-          </select>
-        </label>
-      </div>
-      <div>
-        <label class="small">Indirizzo
-          <select id="fIndir"><option value="">Tutti</option>
-            <?php foreach($opt_ind as $v): ?><option value="<?=esc($v)?>"><?=esc($v)?></option><?php endforeach; ?>
-          </select>
-        </label>
-      </div>
-      <div><button type="button" class="btn" id="btnReset">Reset filtri</button></div>
-    </div>
-  </section>
-</div>
-
-
     <!-- <p class="muted">Seleziona fino a <span class="counter" id="counter">0</span> / 4 corsi.</p> -->
     <div class="top-actions">
-    
- <p class="muted" style="margin:0">
-  Seleziona fino a <span class="counter" id="counter">0</span> / 4 corsi
-  (max 2 nel Trimestre e 2 nel Pentamestre).
-</p>
-
+  <p class="muted" style="margin:0">
+    Seleziona fino a <span class="counter" id="counter">0</span> / 4 corsi.
+  </p>
   <button class="btn btn-green" type="submit" id="btnSubmit" disabled>
     Iscriviti ai corsi selezionati
   </button>
@@ -326,17 +219,17 @@ label.small{font-size:.9rem;color:#374151}
 
   <!-- Riepilogo compatto sempre visibile -->
   <p>
-  <strong>Docente:</strong> <?=esc($c['Docente']??'')?> <br>
-  <strong>Disciplina:</strong> <?=esc($c['Disciplina']??'')?> <br>
-  <?php if(!empty($c['Periodo'])): ?>
-    <strong>Periodo:</strong> <?=esc($c['Periodo'])?><br>
-  <?php endif; ?>
-  <strong>Giorno:</strong> <?=esc($c['Giorno della settimana']??'')?> |
-  <strong>Orario:</strong> <?=esc($c['Orario']??'')?> <br>
-  <strong>Destinatari:</strong> <?=esc($c['Anno Scolastico destinatario']??'')?> |
-  <strong>Indirizzo:</strong> <?=esc($c['Indirizzo']??'')?>
-</p>
-
+    <strong>Docente:</strong> <?=esc($c['Docente']??'')?> <br>
+    <strong>Disciplina:</strong> <?=esc($c['Disciplina']??'')?> <br>
+    <strong>Giorno:</strong> <?=esc($c['Giorno della settimana']??'')?> |
+    <strong>Orario:</strong> <?=esc($c['Orario']??'')?> <br>
+    <strong>Destinatari:</strong> <?=esc($c['Anno Scolastico destinatario']??'')?> |
+    <strong>Indirizzo:</strong> <?=esc($c['Indirizzo']??'')?>
+  </p>
+  <p>
+    <strong>Posti disponibili:</strong> <?=esc((string)$c['Posti disponibili'])?> |
+    <strong>Posti liberi:</strong> <?= $lib===null ? 'n/d' : esc((string)$lib) ?>
+  </p>
 
   <!-- Bottone toggle -->
   <p style="margin-top:8px">
@@ -348,6 +241,9 @@ label.small{font-size:.9rem;color:#374151}
 
   <!-- Dettagli estesi (nascosti di default) -->
   <div id="det-<?=$id?>" class="details" hidden>
+    <?php if(!empty($c['Periodo'])): ?>
+      <p><strong>Periodo:</strong> <?=esc($c['Periodo'])?></p>
+    <?php endif; ?>
 
     <?php if(!empty($c['Prerequisiti'])): ?>
       <p><strong>Prerequisiti:</strong><br><?=nl2br(esc($c['Prerequisiti']))?></p>
@@ -387,136 +283,66 @@ label.small{font-size:.9rem;color:#374151}
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  // ---------- Helpers ----------
-  const norm = v => (v || '').trim().toLowerCase();
-  const get = id => document.getElementById(id);
-  
+const selDoc=document.getElementById('fDocente');
+const selDisc=document.getElementById('fDisc');
+const selGio=document.getElementById('fGiorno');
+const selDes=document.getElementById('fDest');
+const selInd=document.getElementById('fIndir');
+const btnReset=document.getElementById('btnReset');
+const cards=[...document.querySelectorAll('.course')];
+const selPer  = document.getElementById('fPeriodo');
 
-  // Filtri (tolleranti: se un select manca, non andiamo in errore)
-  const selDoc = get('fDocente');
-  const selDisc = get('fDisc');
-  const selPer = get('fPeriodo');
-  const selGio = get('fGiorno');
-  const selDes = get('fDest');
-  const selInd = get('fIndir');
 
-  const filters = [selDoc, selDisc, selPer, selGio, selDes, selInd].filter(Boolean);
-  const cards = Array.from(document.querySelectorAll('.course'));
-  
-    // ---------------Check email ----
-  const emailEl = document.querySelector('input[name="email"]');
-if (emailEl){
-  // Normalizziamo in minuscolo e senza spazi
-  emailEl.addEventListener('blur', ()=> { emailEl.value = emailEl.value.trim().toLowerCase(); });
-  // Messaggio custom se pattern/type non combaciano
-  emailEl.addEventListener('invalid', (e)=>{
-    if (emailEl.validity.typeMismatch || emailEl.validity.patternMismatch) {
-      emailEl.setCustomValidity('Inserisci la mail istituzionale nel formato cognome.nome@stu.lasboccioni.it');
-    } else {
-      emailEl.setCustomValidity('');
-    }
+function norm(v){return (v||'').trim().toLowerCase();}
+
+function applyFilters(){
+  const f = {
+    docente:   norm(selDoc.value),
+    disciplina:norm(selDisc.value),
+    periodo:   norm(selPer.value),
+    giorno:    norm(selGio.value),
+    dest:      norm(selDes.value),
+    indir:     norm(selInd.value)
+  };
+  cards.forEach(card=>{
+    const ok =
+      (!f.docente   || card.dataset.docente    === f.docente) &&
+      (!f.disciplina|| card.dataset.disciplina === f.disciplina) &&
+      (!f.periodo   || card.dataset.periodo    === f.periodo) &&
+      (!f.giorno    || card.dataset.giorno     === f.giorno) &&
+      (!f.dest      || card.dataset.dest       === f.dest) &&
+      (!f.indir     || card.dataset.indirizzo  === f.indir);
+    card.style.display = ok ? '' : 'none';
   });
-  emailEl.addEventListener('input', ()=> emailEl.setCustomValidity(''));
 }
 
-  function applyFilters(){
-    const f = {
-      docente:   selDoc ? norm(selDoc.value) : '',
-      disciplina:selDisc? norm(selDisc.value): '',
-      periodo:   selPer ? norm(selPer.value) : '',
-      giorno:    selGio ? norm(selGio.value) : '',
-      dest:      selDes ? norm(selDes.value) : '',
-      indir:     selInd ? norm(selInd.value) : ''
-    };
-    cards.forEach(card=>{
-      const ok =
-        (!f.docente   || card.dataset.docente    === f.docente) &&
-        (!f.disciplina|| card.dataset.disciplina === f.disciplina) &&
-        (!f.periodo   || card.dataset.periodo    === f.periodo) &&
-        (!f.giorno    || card.dataset.giorno     === f.giorno) &&
-        (!f.dest      || card.dataset.dest       === f.dest) &&
-        (!f.indir     || card.dataset.indirizzo  === f.indir);
-      card.style.display = ok ? '' : 'none';
-    });
-  }
-  filters.forEach(el => el.addEventListener('change', applyFilters));
-  const btnReset = get('btnReset');
-  if (btnReset){
-    btnReset.addEventListener('click', ()=>{
-      filters.forEach(el => { el.value = ''; });
-      applyFilters();
-    });
-  }
 
-  // ---------- Selezione & limiti ----------
-  const MAX = 4;
-  const PER_MAX = { trimestre: 2, pentamestre: 2 };
+[selDoc,selDisc,selPer,selGio,selDes,selInd].forEach(el=>el.addEventListener('change',applyFilters));
+btnReset.addEventListener('click',()=>{[selDoc,selDisc,selPer,selGio,selDes,selInd].forEach(el=>el.value='');applyFilters();});
 
-  const counterEl = get('counter');
-  const btnSubmit = get('btnSubmit');
-  const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"][name="corsi[]"]'));
-
-  function periodOf(cb){
-    const card = cb.closest('.course');
-    const p = (card?.dataset.periodo || '').toLowerCase();
-    if (p.includes('trim')) return 'trimestre';
-    if (p.includes('penta')) return 'pentamestre';
-    return 'other';
-  }
-  function countsByPeriod(){
-    const c = { trimestre:0, pentamestre:0, other:0 };
-    checkboxes.forEach(cb => { if (cb.checked) c[periodOf(cb)]++; });
-    return c;
-  }
-  function updateCounter(){
-    const selected = checkboxes.filter(cb=>cb.checked).length;
-    if (counterEl) counterEl.textContent = String(selected);
-    if (btnSubmit) btnSubmit.disabled = (selected === 0);  // <— abilita il bottone
-  }
-
-  checkboxes.forEach(cb=>{
-    cb.addEventListener('change', (e)=>{
-      // totale 4
-      let selected = checkboxes.filter(x=>x.checked).length;
-      if (selected > MAX) {
-        e.target.checked = false;
-        alert('Puoi selezionare al massimo ' + MAX + ' corsi in totale.');
-        selected--;
-      }
-      // per-periodo 2/2
-      const cnt = countsByPeriod();
-      if (cnt.trimestre > PER_MAX.trimestre) {
-        e.target.checked = false;
-        alert('Puoi selezionare al massimo ' + PER_MAX.trimestre + ' corsi nel Trimestre.');
-      } else if (cnt.pentamestre > PER_MAX.pentamestre) {
-        e.target.checked = false;
-        alert('Puoi selezionare al massimo ' + PER_MAX.pentamestre + ' corsi nel Pentamestre.');
-      }
-      updateCounter();
-    });
-  });
-
-  // Inizializzazioni
+const MAX=4,counterEl=document.getElementById('counter'),btnSubmit=document.getElementById('btnSubmit');
+const checkboxes=[...document.querySelectorAll('input[type="checkbox"][name="corsi[]"]')];
+function updateCounter(){const sel=checkboxes.filter(cb=>cb.checked);counterEl.textContent=String(sel.length);btnSubmit.disabled=sel.length===0;}
+checkboxes.forEach(cb=>cb.addEventListener('change',e=>{
+  const selected=checkboxes.filter(x=>x.checked).length;
+  if(selected>MAX){e.target.checked=false;alert('Puoi selezionare al massimo '+MAX+' corsi.');}
   updateCounter();
-  applyFilters();
+}));
+updateCounter(); applyFilters();
 
-  // ---------- Toggle dettagli (tollerante) ----------
-  document.querySelectorAll('.toggle-details').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const id = btn.getAttribute('aria-controls');
-      const panel = document.getElementById(id);
-      const open = btn.getAttribute('aria-expanded') === 'true';
-      if (panel){
-        panel.hidden = open;
-        btn.setAttribute('aria-expanded', String(!open));
-        btn.textContent = open ? 'Mostra dettagli' : 'Nascondi dettagli';
-      }
-    });
+// --- TOGGLE DETTAGLI ---
+document.querySelectorAll('.toggle-details').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const id = btn.getAttribute('aria-controls');
+    const panel = document.getElementById(id);
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    panel.hidden = open;                       // nascondi/mostra
+    btn.setAttribute('aria-expanded', String(!open));
+    btn.textContent = open ? 'Mostra dettagli' : 'Nascondi dettagli';
   });
 });
+
+
 </script>
-
-
 </body>
 </html>
